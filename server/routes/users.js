@@ -20,7 +20,8 @@ function stripPassword(user) {
 userRouter.get('/', async function (req, res, next) {
   try {
     const appDB = app && app.locals && app.locals.db;
-    const db = appDB || getDb();
+    const reqDB = req.app && req.app.locals && req.app.locals.db;
+    const db = reqDB || appDB || getDb();
 
     if (!db) return res.status(500).json({ error: 'Database not initialized' });
     const users = await db.collection('users').find({}).toArray();

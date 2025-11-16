@@ -27,8 +27,9 @@
 		return db;
 	}
 
-	function getDb() {
-		if (!db) throw new Error('Database not initialized. Call connect() first.');
+	async function getDb() {
+		// if (!db) throw new Error('Database not initialized. Call connect() first.');
+		if (!db) await connect();
 		return db;
 	}
 
