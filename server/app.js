@@ -5,7 +5,6 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const cors = require('cors');
 
-var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var auctionsRouter = require('./routes/auctions');
 
@@ -33,6 +32,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Initialize MongoDB connection (uses server/db/connection.js)
 const dbConnection = require('./db/connection');
 const { title } = require('process');
+
 dbConnection.connect()
   .then(db => {
     // Attach db to app.locals so routes can access it via req.app.locals.db
@@ -44,7 +44,6 @@ dbConnection.connect()
     // don't crash the app here; the app can still respond but DB operations will fail until connected
   });
 
-// app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/auctions', auctionsRouter);
 
