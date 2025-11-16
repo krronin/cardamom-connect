@@ -4,10 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "start-tsc": "node ./dist/index.js",
-    "tsc": "tsc",
-    "postinstall": "npm run tsc",
-    "dev": "ts-node-dev — respawn — pretty — transpile-only index.ts"
+    "start-tsc": "node ./dist/index.js"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
