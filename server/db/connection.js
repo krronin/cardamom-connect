@@ -4,16 +4,22 @@
 	const { MongoClient } = require('mongodb');
 
 	// Use MONGODB_URI env var first, then fallback to local DB named 'nutribid'
-	const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017';
+	const uri = process.env.CC_MONGODB_URI || 'mongodb://127.0.0.1:27017';
 	const dbName = process.env.MONGODB_DB || 'cardamom-connect';
 
 	let client;
 	let db;
 
 	async function connect() {
-		if (db) return ;
+		if (db) return;
 
-		client = new MongoClient(uri);
+		client = new MongoClient(uri, {
+			serverApi: {
+				version: ServerApiVersion.v1,
+				strict: true,
+				deprecationErrors: true,
+			}
+		});
 		await client.connect();
 		db = client.db(dbName);
 		console.log(`Connected to MongoDB: ${uri}/${dbName}`);
