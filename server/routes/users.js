@@ -1,6 +1,10 @@
 var express = require('express');
 var userRouter = express.Router();
 var crypto = require('crypto');
+const { generateRandomPassword, generateUserId } = require('../utils');
+const { getDb } = require('../db/connection');
+
+var app = express();
 
 function makeId() {
   return (Date.now().toString(36) + Math.random().toString(36).slice(2));
@@ -12,28 +16,11 @@ function stripPassword(user) {
   return safe;
 }
 
-function generateUserId(gstNumber) {
-  const gstNameChars = gstNumber
-    .substring(gstNumber.length - 4, gstNumber.length)
-    .toUpperCase();
-
-  return "USER-" + gstNameChars;
-};
-
-function generateRandomPassword() {
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let password = "";
-  for (let i = 0; i < 8; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return password;
-};
-
 /* GET users listing from MongoDB 'users' collection. */
 userRouter.get('/', async function (req, res, next) {
   try {
-    const db = req.app && req.app.locals && req.app.locals.db;
+    const appDB = app && app.locals && app.locals.db;
+    const db = appDB || getDb();
 
     if (!db) return res.status(500).json({ error: 'Database not initialized' });
     const users = await db.collection('users').find({}).toArray();
@@ -54,7 +41,8 @@ userRouter.post('/login', async function (req, res, next) {
 
     if (!identifier || !password) return res.status(400).json({ error: 'identifier and password required' });
 
-    const db = req.app && req.app.locals && req.app.locals.db;
+    const appDB = app && app.locals && app.locals.db;
+    const db = appDB || getDb();
     if (!db) return res.status(500).json({ error: 'Database not initialized' });
 
     const user = await db.collection('users').findOne({ $or: [{ username: identifier }, { email: identifier }] });
@@ -87,7 +75,8 @@ userRouter.post('/create', async function (req, res, next) {
 
     if (!businessName || !phone || !gstNumber) return res.status(400).json({ error: 'Business name, phone and GST number are required' });
 
-    const db = req.app && req.app.locals && req.app.locals.db;
+    const appDB = app && app.locals && app.locals.db;
+    const db = appDB || getDb();
     if (!db) return res.status(500).json({ error: 'Database not initialized' });
 
     // Check existing
@@ -129,7 +118,8 @@ userRouter.patch('/update', async function (req, res, next) {
       email
     } = req.body;
 
-    const db = req.app && req.app.locals && req.app.locals.db;
+    const appDB = app && app.locals && app.locals.db;
+    const db = appDB || getDb();
     if (!db) return res.status(500).json({ error: 'Database not initialized' });
 
     // Check existing
@@ -156,7 +146,8 @@ userRouter.patch('/update', async function (req, res, next) {
 // DELETE /delete - delete a user in MongoDB 'users' collection
 userRouter.delete('/delete/:uuid', async function (req, res, next) {
   try {
-    const db = req.app && req.app.locals && req.app.locals.db;
+    const appDB = app && app.locals && app.locals.db;
+    const db = appDB || getDb();
     if (!db) return res.status(500).json({ error: 'Database not initialized' });
 
     // Check existing
