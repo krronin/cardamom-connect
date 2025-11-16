@@ -1,11 +1,11 @@
 (function () {
 	'use strict';
+	require('dotenv').config();
 
-	const { MongoClient } = require('mongodb');
+	const { MongoClient, ServerApiVersion } = require('mongodb');
 
 	// Use MONGODB_URI env var first, then fallback to local DB named 'cardamom-connect'
-	const fallback_uri = "mongodb+srv://krronin_db_user:5hqAANxKMWrzYZLi@cluster-aws.s1dr1qv.mongodb.net/?appName=Cluster-AWS";
-	const uri = process.env.CC_MONGODB_URI || fallback_uri || 'mongodb://127.0.0.1:27017';
+	const uri = process.env.CC_MONGODB_URI || 'mongodb://127.0.0.1:27017';
 	const dbName = process.env.CC_MONGODB_DB || 'cardamom-connect';
 
 	let client;

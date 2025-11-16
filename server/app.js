@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const cors = require('cors');
 
+var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var auctionsRouter = require('./routes/auctions');
 
@@ -12,8 +13,8 @@ var app = express();
 
 // Enable CORS for all routes
 const corsOptions = {
-  origin: 'http://localhost:5173', // Allow requests only from this origin
-  methods: 'GET,POST,PATCH,DELETE',             // Allow only GET and POST methods
+  origin: 'http://localhost:5173',                  // Allow requests only from this origin
+  methods: 'GET,POST,PATCH,DELETE',                 // Allow only GET and POST methods
   allowedHeaders: ['Content-Type', 'Authorization'] // Allow specific headers
 };
 // Use CORS middleware with specified options
@@ -44,6 +45,7 @@ dbConnection.connect()
     // don't crash the app here; the app can still respond but DB operations will fail until connected
   });
 
+app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/auctions', auctionsRouter);
 
