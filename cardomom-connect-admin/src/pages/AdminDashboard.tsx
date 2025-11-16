@@ -10,18 +10,24 @@ import {
 import { useEffect, useState } from "react";
 import UserForm from "../components/forms/UserForm";
 import type { IUser } from "../types";
-import "./AdminDashboard.scss";
+import "../assets/styles/AdminDashboard.scss";
 import AdminProfile from "../components/AdminProfile";
 import UserList from "../components/UserList";
 
 const AdminDashboard = () => {
+  const env = import.meta.env.MODE;
+  const apiUrl =
+    env === "production"
+      ? import.meta.env.VITE_API_URL_PRODUCTION
+      : import.meta.env.VITE_API_URL_LOCAL;
+
   const [users, setUsers] = useState(() => [] as IUser[]);
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState<IUser | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const fetchUsersFromServer = async () => {
-    fetch("http://localhost:3000/users")
+    fetch(apiUrl + "/users")
       .then((response) => response.json())
       .then((data) => {
         setUsers(data);
@@ -47,7 +53,7 @@ const AdminDashboard = () => {
   };
 
   const handleCreateUser = async (userData: IUser) => {
-    const response = await fetch("http://localhost:3000/users/create", {
+    const response = await fetch(apiUrl + "/users/create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -68,7 +74,7 @@ const AdminDashboard = () => {
   };
 
   const handleEditUser = async (updatedUser: any) => {
-    const response = await fetch("http://localhost:3000/users/update", {
+    const response = await fetch(apiUrl + "/users/update", {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -96,7 +102,7 @@ const AdminDashboard = () => {
   };
 
   const deleteUserFromServer = async (uuid: string) => {
-    const response = await fetch("http://localhost:3000/users/delete/" + uuid, {
+    const response = await fetch(apiUrl + "/users/delete/" + uuid, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
