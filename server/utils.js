@@ -1,4 +1,4 @@
-export function generateUserId(gstNumber) {
+function generateUserId(gstNumber) {
   const gstNameChars = gstNumber
     .substring(gstNumber.length - 4, gstNumber.length)
     .toUpperCase();
@@ -6,7 +6,7 @@ export function generateUserId(gstNumber) {
   return "USER-" + gstNameChars;
 };
 
-export function generateRandomPassword() {
+function generateRandomPassword() {
   const chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let password = "";
@@ -14,4 +14,21 @@ export function generateRandomPassword() {
     password += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return password;
+};
+
+function makeId() {
+  return (Date.now().toString(36) + Math.random().toString(36).slice(2));
+}
+
+function stripPassword(user) {
+  if (!user) return user;
+  const { password, ...safe } = user;
+  return safe;
+}
+
+module.exports = {
+  generateRandomPassword,
+  generateUserId,
+  stripPassword,
+  makeId
 };

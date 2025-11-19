@@ -31,23 +31,19 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Initialize MongoDB connection (uses server/db/connection.js)
-const dbConnection = require('./db/connection');
-const { title } = require('process');
-
-dbConnection.connect()
-  .then(db => {
-    // Attach db to app.locals so routes can access it via req.app.locals.db
-    app.locals.db = db;
-    console.log('MongoDB connected and available at app.locals.db');
-  })
-  .catch(err => {
-    console.error('Failed to connect to MongoDB:', err);
-    // don't crash the app here; the app can still respond but DB operations will fail until connected
-  });
+// const dbConnection = require('./db/connection');
+const { CONNECT_TO_DATABASE } = require('./db/connection');
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/auctions', auctionsRouter);
+
+// Connect to MongoDB and make the db available via app.locals
+CONNECT_TO_DATABASE()
+  .then(db => {
+    app.locals.db = db; // Store the database object in app.locals
+  })
+  .catch(console.dir);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

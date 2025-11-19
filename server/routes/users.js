@@ -1,10 +1,9 @@
-var express = require('express');
-var userRouter = express.Router();
-var crypto = require('crypto');
-const { generateRandomPassword, generateUserId } = require('../utils');
-const { getDb } = require('../db/connection');
+const express = require('express');
+const userRouter = express.Router();
+const crypto = require('crypto');
 
-var app = express();
+const { generateRandomPassword, generateUserId } = require('../utils');
+const { getDBInstance, closeDBInstance } = require('../db/connection');
 
 function makeId() {
   return (Date.now().toString(36) + Math.random().toString(36).slice(2));
@@ -19,15 +18,13 @@ function stripPassword(user) {
 /* GET users listing from MongoDB 'users' collection. */
 userRouter.get('/', async function (req, res, next) {
   try {
-    const appDB = app && app.locals && app.locals.db;
-    const reqDB = req.app && req.app.locals && req.app.locals.db;
-    const db = reqDB || appDB || getDb();
+    const dbInstance = await getDBInstance();
+    if (!dbInstance) return res.status(500).json({ error: 'Database not initialized' });
 
-    if (!db) return res.status(500).json({ error: 'Database not initialized' });
-    const users = await db.collection('users').find({}).toArray();
+    const users = await dbInstance.collection("users").find({}).toArray();
+
     // Never return passwords in API responses
     const safe = users.map(u => stripPassword(u));
-
     res.json(safe);
   } catch (err) {
     next(err);
@@ -63,6 +60,9 @@ userRouter.post('/login', async function (req, res, next) {
 // POST /create - create a new user in MongoDB 'users' collection
 userRouter.post('/create', async function (req, res, next) {
   try {
+    const dbInstance = await getDBInstance();
+    if (!dbInstance) return res.status(500).json({ error: 'Database not initialized' });
+
     const {
       businessName,
       businessAddress,
@@ -76,17 +76,11 @@ userRouter.post('/create', async function (req, res, next) {
 
     if (!businessName || !phone || !gstNumber) return res.status(400).json({ error: 'Business name, phone and GST number are required' });
 
-    const appDB = app && app.locals && app.locals.db;
-    const db = appDB || getDb();
-    if (!db) return res.status(500).json({ error: 'Database not initialized' });
-
     // Check existing
-    const exists = await db.collection('users').findOne({ $or: [{ businessName }, { phone }, { gstNumber }] });
+    const exists = await dbInstance.collection('users').findOne({ $or: [{ uuid }] });
     if (exists) {
       return res.status(409).json({ error: 'Business name or phone or GST number already exists' });
     }
-
-    console.log(new Date().toISOString());
 
     const user = {
       _id: makeId(),
@@ -100,7 +94,7 @@ userRouter.post('/create', async function (req, res, next) {
       businessAddress
     };
 
-    await db.collection('users').insertOne(user);
+    await dbInstance.collection('users').insertOne(user);
 
     res.status(201).json({ message: 'User created', user: stripPassword(user) });
   } catch (err) {
@@ -111,22 +105,22 @@ userRouter.post('/create', async function (req, res, next) {
 // PATCH /patch - update an existing user in MongoDB 'users' collection
 userRouter.patch('/update', async function (req, res, next) {
   try {
+    const dbInstance = await getDBInstance();
+    if (!dbInstance) return res.status(500).json({ error: 'Database not initialized' });
+
     const {
       businessName,
       businessAddress,
       phone,
       gstNumber,
-      email
+      email,
+      uuid
     } = req.body;
 
-    const appDB = app && app.locals && app.locals.db;
-    const db = appDB || getDb();
-    if (!db) return res.status(500).json({ error: 'Database not initialized' });
-
     // Check existing
-    const userDetails = await db.collection('users').findOne({ $or: [{ businessName }, { phone }, { gstNumber }] });
+    const userDetails = await dbInstance.collection('users').findOne({ uuid });
     if (userDetails) {
-      db.collection('users').updateOne({ _id: userDetails._id }, {
+      dbInstance.collection('users').updateOne({ _id: userDetails._id }, {
         $set: {
           businessName,
           businessAddress,
@@ -147,14 +141,13 @@ userRouter.patch('/update', async function (req, res, next) {
 // DELETE /delete - delete a user in MongoDB 'users' collection
 userRouter.delete('/delete/:uuid', async function (req, res, next) {
   try {
-    const appDB = app && app.locals && app.locals.db;
-    const db = appDB || getDb();
-    if (!db) return res.status(500).json({ error: 'Database not initialized' });
+    const dbInstance = await getDBInstance();
+    if (!dbInstance) return res.status(500).json({ error: 'Database not initialized' });
 
     // Check existing
-    const userDetails = await db.collection('users').deleteOne({ uuid: req.params.uuid });
+    const userDetails = await dbInstance.collection('users').deleteOne({ uuid: req.params.uuid });
     if (userDetails) {
-      db.collection('users').deleteOne({ _id: userDetails._id });
+      dbInstance.collection('users').deleteOne({ _id: userDetails._id });
       return res.status(200).json({ message: 'User deleted successfully' });
     } else {
       return res.status(409).json({ error: 'User details not found' });

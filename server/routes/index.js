@@ -1,8 +1,17 @@
 var express = require('express');
-var router = express.Router();
+
+const router = express.Router();
+const { getDBInstance } = require('../db/connection');
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
+router.get('/', async function (req, res, next) {
+  const dbInstance = await getDBInstance();
+  dbInstance.client.connect();
+  const collections = await dbInstance.listCollections().toArray();
+  const users = dbInstance.collection("users"); // Example operation to verify DB access
+  // const collectionNames = collections.map(col => col.name);
+
+  console.log("Collection Names:", await users.findOne());
   res.render('index', { title: 'Express' });
 });
 
