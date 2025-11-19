@@ -3,29 +3,17 @@ const express = require('express');
 require('dotenv').config();
 
 // Use MONGODB_URI env var first, then fallback to local DB named 'cardamom-connect'
-let uri = process.env.CC_MONGODB_URI;
-let dbName = process.env.CC_MONGODB_DB;
+let uri = "mongodb+srv://krronin_db_user:5hqAANxKMWrzYZLi@cluster-aws.s1dr1qv.mongodb.net/?appName=Cluster-AWS";
+let dbName = "cardamom-connect";
 
-if (process.env.NODE_ENV === "development") {
-  uri = 'mongodb://127.0.0.1:27017/cardamom-connect';
-  console.info("Using development database settings");
-} else {
-  console.info("Using production database settings");
-}
-
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
-let clientOptions = {};
-if (process.env.NODE_ENV === "production") {
-  clientOptions = {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-      useNewUrlParser: true
-    }
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+    useNewUrlParser: true
   }
-}
-const client = new MongoClient(uri, clientOptions);
+});
 
 var app = express();
 
