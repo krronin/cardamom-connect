@@ -2,6 +2,7 @@
 // AdminDashboard.js
 import {
   Button,
+  CircularProgress,
   List,
   ListItem,
   ListItemButton,
@@ -21,6 +22,7 @@ const AdminDashboard = () => {
       ? import.meta.env.VITE_API_URL_PRODUCTION
       : import.meta.env.VITE_API_URL_LOCAL;
 
+  const [dataFetched, setDataFetched] = useState(false);
   const [users, setUsers] = useState(() => [] as IUser[]);
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState<IUser | null>(null);
@@ -31,6 +33,7 @@ const AdminDashboard = () => {
       .then((response) => response.json())
       .then((data) => {
         setUsers(data);
+        setDataFetched(true);
       })
       .catch((error) => {
         console.error("Error fetching users:", error);
@@ -39,8 +42,8 @@ const AdminDashboard = () => {
 
   // Fetch users from server
   useEffect(() => {
-    fetchUsersFromServer();
-  }, []);
+    if (!dataFetched) fetchUsersFromServer();
+  }, [dataFetched]);
 
   const handleListItemClick = (index: number) => {
     setSelectedIndex(index);
@@ -142,7 +145,7 @@ const AdminDashboard = () => {
   return (
     <div className="admin-dashboard">
       <main>
-        <section className="sidebar card">
+        <section className="sidebar card">        
           <List>
             <ListItem disablePadding>
               <ListItemButton
@@ -181,14 +184,16 @@ const AdminDashboard = () => {
                 isEditing={!!editingUser}
               />
             )}
-            {selectedIndex === 0 && (
+            {
+              selectedIndex === 0 && dataFetched && (
               <UserList
                 users={users}
                 onEdit={handleEditClick}
                 onDelete={handleDeleteUser}
               />
             )}
-            {selectedIndex === 1 && <AdminProfile />}
+            { selectedIndex === 0 && !dataFetched && (<CircularProgress />)}
+            { selectedIndex === 1 && <AdminProfile /> }
           </div>
         </section>
       </main>

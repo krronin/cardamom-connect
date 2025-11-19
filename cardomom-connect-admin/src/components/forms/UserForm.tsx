@@ -130,6 +130,7 @@ const UserForm = ({ user, onSubmit, onCancel, isEditing }: UserFormProps) => {
               id="phone"
               name="phone"
               value={formData.phone}
+              disabled={isEditing}
               onChange={handleChange}
               className={errors.phone ? 'error' : ''}
               placeholder="Enter 10-digit phone number"
@@ -145,6 +146,7 @@ const UserForm = ({ user, onSubmit, onCancel, isEditing }: UserFormProps) => {
               id="gstNumber"
               name="gstNumber"
               value={formData.gstNumber}
+              disabled={isEditing}
               onChange={handleChange}
               className={errors.gstNumber ? 'error' : ''}
               placeholder="Enter GST number"
@@ -167,7 +169,7 @@ const UserForm = ({ user, onSubmit, onCancel, isEditing }: UserFormProps) => {
           </div>
 
           <div className="form-actions">
-            <Button variant="text">
+            <Button variant="text" onClick={onCancel}>
               <span>Cancel</span>
             </Button>
             <Button type="submit" variant="contained">
