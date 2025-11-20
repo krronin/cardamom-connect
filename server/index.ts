@@ -1,43 +1,57 @@
 import express, { Express } from "express";
+import { Server, createServer } from 'http';
+import mongoose from "mongoose";
+import { logger } from "./src/config/logger";
 import { bootstrapAppDependencies } from "./src/app";
 import { CONNECT_TO_DATABASE } from "./src/config/connection";
-import { logger } from "./src/config/logger";
 
-const app: Express = express();
+const exitHandler = (server: Server | null) => {
+  if (server) {
+    server.close(async () => {
+      logger.info('Server closed');
+      process.exit(1);
+    });
+  } else {
+    process.exit(1);
+  }
+};
 
-// Global variable to track if DB is connected
-let isDbConnected: boolean = false;
-let appInitialized: Express | null = null;
+const unExpectedErrorHandler = (server: Server) => {
+  return function (error: Error) {
+    logger.error(error);
+    exitHandler(server);
+  };
+};
 
-// Initialize application
-async function initializeApp(): Promise<Express> {
-  try {
-    if (!isDbConnected) {
-      const DB = await CONNECT_TO_DATABASE();
-      app.locals.db = DB;
-      isDbConnected = true;
-      logger.info('Database connected successfully');
+const startServer = async () => {
+  const app: Express = express();
+  
+  // connect and add db instance to app.locals
+  const DB = await CONNECT_TO_DATABASE();
+  app.locals.db = DB;
+  
+  // bootstrap app dependencies like middlewares, routes etc.
+  bootstrapAppDependencies(app);
+
+  const httpServer = createServer(app);
+  const port = process.env.PORT || 5566;
+
+  const server: Server = httpServer.listen(port, () => {
+    logger.info(`server listening on port ${port}`);
+  });
+
+  process.on('uncaughtException', unExpectedErrorHandler(server));
+  process.on('unhandledRejection', unExpectedErrorHandler(server));
+  process.on('SIGTERM', () => {
+    logger.info('SIGTERM recieved');
+    if (server) {
+      server.close();
     }
-    
-    bootstrapAppDependencies(app);
-    appInitialized = app;
-    return app;
-  } catch (error) {
-    logger.error('Failed to initialize app:', error);
-    throw error;
-  }
-}
+  });
 
-// Initialize app on cold start
-const appPromise: Promise<Express> = initializeApp();
+  mongoose.connection.on("error", (err) => {
+    console.log(`${err.no}: ${err.code}\t${err.syscall}\t${err.hostname}`);
+  });
+};
 
-// Vercel serverless function handler
-export default async function handler(req: any, res: any) {
-  try {
-    const expressApp = await appPromise;
-    return expressApp(req, res);
-  } catch (error) {
-    logger.error('Handler error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-}
+startServer();

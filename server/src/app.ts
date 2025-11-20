@@ -4,14 +4,11 @@ import morgan from "morgan";
 import helmet from "helmet";
 import cors from "cors";
 
-import { notFound, errorHandler } from "./middleware/index.middleware";
-import api from "./api/index.api";
-
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import ExpressMongoSanitize from "express-mongo-sanitize";
 import { corsOptions } from "./config/cors";
-import userRouter from "./api/users.api";
+import userRouter from "./routes/users";
 
 config();
 
@@ -23,11 +20,7 @@ export const bootstrapAppDependencies = (app: any) => {
   app.use(bodyParser.urlencoded({ extended: true, limit: "30mb" }));
   app.use(cookieParser());
 
-  app.use("/cardamom-connect/", api);
-  app.use("/cardamom-connect/users", userRouter);
-
-  app.use(notFound);
-  app.use(errorHandler);
+  app.use("/users", userRouter);
 
   app.use(ExpressMongoSanitize());
 
