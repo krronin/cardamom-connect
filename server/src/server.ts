@@ -1,6 +1,5 @@
 // api/index.ts
 import express, { Express, Request, Response } from "express";
-import mongoose from "mongoose";
 import { logger } from "../src/config/logger";
 import { bootstrapAppDependencies } from "../src/app";
 import { CONNECT_TO_DATABASE } from "../src/config/connection";
