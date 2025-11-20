@@ -6,9 +6,9 @@ import cors from "cors";
 
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
-import ExpressMongoSanitize from "express-mongo-sanitize";
 import { corsOptions } from "./config/cors";
 import userRouter from "./routes/users";
+import indexRouter from "./routes";
 
 config();
 
@@ -20,9 +20,8 @@ export const bootstrapAppDependencies = (app: any) => {
   app.use(bodyParser.urlencoded({ extended: true, limit: "30mb" }));
   app.use(cookieParser());
 
+  app.use("/", indexRouter);
   app.use("/users", userRouter);
-
-  app.use(ExpressMongoSanitize());
 
   // Use CORS middleware with specified options
   app.use(cors(corsOptions));

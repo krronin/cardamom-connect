@@ -17,7 +17,7 @@ function stripPassword(user) {
 /* GET users listing from MongoDB 'users' collection. */
 userRouter.get('/', async function (req, res, next) {
   try {
-    const dbInstance = req.app.locals.db;
+    const dbInstance = req.app && req.app.locals && req.app.locals.db;
 
     if (!dbInstance) return res.status(500).json({ error: 'Database not initialized' });
 
