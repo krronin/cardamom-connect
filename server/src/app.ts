@@ -12,7 +12,7 @@ import indexRouter from "./routes";
 
 config();
 
-export const bootstrapAppDependencies = (app: any) => {
+export const bootstrapAppDependencies = async (app: any) => {
   app.use(morgan("dev"));
   app.use(helmet());
   app.use(cors());

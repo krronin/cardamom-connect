@@ -31,7 +31,7 @@ const startServer = async () => {
   app.locals.db = DB;
   
   // bootstrap app dependencies like middlewares, routes etc.
-  bootstrapAppDependencies(app);
+  await bootstrapAppDependencies(app);
 
   const httpServer = createServer(app);
   const port = process.env.PORT || 5566;

@@ -6,22 +6,15 @@ import { CONNECT_TO_DATABASE } from "../src/config/connection";
 
 const app: Express = express();
 
-// Global variable to track if DB is connected
-let isDbConnected: boolean = false;
-let appInitialized: Express | null = null;
-
 // Initialize application
 async function initializeApp(): Promise<Express> {
   try {
-    if (!isDbConnected) {
-      const DB = await CONNECT_TO_DATABASE();
-      app.locals.db = DB;
-      isDbConnected = true;
-      logger.info('Production database connected successfully');
-    }
-    
-    bootstrapAppDependencies(app);
-    appInitialized = app;
+    const DB = await CONNECT_TO_DATABASE();
+    logger.info('DATABASE CONNECTION STATUS:', DB);
+    app.locals.db = DB;
+    logger.info('Production database connected successfully');
+
+    await bootstrapAppDependencies(app);
     return app;
   } catch (error) {
     logger.error('Failed to initialize app:', error);
@@ -29,13 +22,10 @@ async function initializeApp(): Promise<Express> {
   }
 }
 
-// Initialize app on cold start
-const appPromise: Promise<Express> = initializeApp();
-
 // Vercel serverless function handler
 export default async function handler(req: any, res: any) {
   try {
-    const expressApp = await appPromise;
+    const expressApp = await initializeApp();
     return expressApp(req, res);
   } catch (error) {
     logger.error('Handler error:', error);
