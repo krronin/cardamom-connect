@@ -1,0 +1,10 @@
+.vercel
+.env*.local
+node_modules
+package-lock.json
+dist
+.DS_Store
+.vscode
+.vercel
+public
+bin

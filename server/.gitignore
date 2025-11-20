@@ -1,10 +1,9 @@
 .vercel
-.env*.local
-node_modules
+.env
 package-lock.json
 dist
 .DS_Store
 .vscode
-.vercel
-public
 bin
+node_modules
+creds.json
